@@ -1,27 +1,180 @@
-#container {
+.camera-section {
+  padding: 16px;
+}
+
+.camera-container {
+  position: relative;
+  width: 100%;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.camera-preview {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  display: block;
+  object-fit: cover;
+  background: #000;
+}
+
+.capture-section {
+  padding: 16px;
+}
+
+.capture-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.capture-btn {
+  height: 60px;
+  font-size: 18px;
+  font-weight: 600;
+  
+  ion-icon {
+    font-size: 24px;
+  }
+}
+
+.player-section {
+  padding: 0 16px 16px;
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.video-player {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  display: block;
+}
+
+.video-info {
+  margin-bottom: 16px;
+  
+  p {
+    margin: 4px 0;
+    font-size: 14px;
+    color: var(--ion-color-medium);
+  }
+}
+
+.video-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.video-list-section {
+  padding: 0 16px 16px;
+}
+
+.no-videos {
   text-align: center;
-
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  padding: 40px 20px;
+  
+  ion-icon {
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin-bottom: 20px;
+    font-size: 16px;
+  }
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
+.video-thumbnail {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ion-color-light);
+  color: var(--ion-color-medium);
 }
 
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
+ion-item.active {
+  --background: var(--ion-color-primary-tint);
+  --color: var(--ion-color-primary-contrast);
 }
 
-#container a {
-  text-decoration: none;
+.recording-indicator {
+  position: fixed;
+  top: 80px;
+  right: 16px;
+  z-index: 1000;
+  
+  ion-chip {
+    --background: var(--ion-color-danger);
+    --color: white;
+    animation: pulse 1.5s infinite;
+    
+    ion-icon {
+      animation: blink 1s infinite;
+    }
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0.3;
+  }
+}
+
+// Mobile optimizations
+@media (max-width: 768px) {
+  .video-actions {
+    flex-direction: column;
+    
+    ion-button {
+      margin: 4px 0;
+    }
+  }
+  
+  .capture-btn {
+    height: 50px;
+    font-size: 16px;
+  }
+  
+  .camera-preview {
+    max-height: 250px;
+  }
+  
+  .video-player {
+    max-height: 250px;
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .video-thumbnail {
+    background: var(--ion-color-dark);
+  }
 }

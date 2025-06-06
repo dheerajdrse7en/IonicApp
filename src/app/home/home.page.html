@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Blank
+      Video Capture
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -9,12 +9,160 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
+      <ion-title size="large">Video Capture</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+  <!-- Camera Preview Section -->
+  <div class="camera-section" *ngIf="isRecording || stream">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Camera Preview</ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <div class="camera-container">
+          <video 
+            #cameraPreview
+            autoplay 
+            playsinline 
+            muted
+            [style.transform]="'scaleX(-1)'"
+            class="camera-preview">
+          </video>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Capture Section -->
+  <div class="capture-section">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Record Video</ion-card-title>
+        <ion-card-subtitle>Capture videos using your device camera</ion-card-subtitle>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <div class="capture-buttons">
+          <ion-button 
+            *ngIf="!isRecording" 
+            expand="block" 
+            color="primary" 
+            (click)="captureVideo()"
+            class="capture-btn">
+            <ion-icon name="videocam" slot="start"></ion-icon>
+            Start Recording
+          </ion-button>
+          
+          <ion-button 
+            *ngIf="isRecording" 
+            expand="block" 
+            color="danger" 
+            (click)="stopRecording()"
+            class="capture-btn">
+            <ion-icon name="stop" slot="start"></ion-icon>
+            Stop Recording
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Video Player Section -->
+  <div class="player-section" *ngIf="currentVideo">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Now Playing</ion-card-title>
+        <ion-card-subtitle>{{ currentVideo.name }}</ion-card-subtitle>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <div class="video-container">
+          <video 
+            #videoPlayer
+            controls 
+            playsinline
+            [src]="currentVideo.webPath || currentVideo.path"
+            class="video-player">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        
+        <div class="video-info">
+          <p><strong>Date:</strong> {{ formatDate(currentVideo.date) }}</p>
+          <p *ngIf="currentVideo.size"><strong>Size:</strong> {{ formatFileSize(currentVideo.size) }}</p>
+        </div>
+
+        <div class="video-actions">
+          <ion-button fill="outline" color="primary" (click)="shareVideo(currentVideo)">
+            <ion-icon name="share" slot="start"></ion-icon>
+            Share
+          </ion-button>
+          
+          <ion-button fill="outline" color="danger" (click)="deleteVideo(currentVideo)">
+            <ion-icon name="trash" slot="start"></ion-icon>
+            Delete
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Video List Section -->
+  <div class="video-list-section">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Recorded Videos</ion-card-title>
+        <ion-card-subtitle>{{ videos.length }} video(s) saved</ion-card-subtitle>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <div *ngIf="videos.length === 0" class="no-videos">
+          <ion-icon name="videocam-outline" size="large" color="medium"></ion-icon>
+          <p>No videos recorded yet</p>
+          <ion-button fill="clear" (click)="captureVideo()">
+            Record your first video
+          </ion-button>
+        </div>
+
+        <ion-list *ngIf="videos.length > 0">
+          <ion-item 
+            *ngFor="let video of videos; trackBy: trackByVideoId" 
+            button
+            (click)="playVideo(video)"
+            [class.active]="currentVideo?.id === video.id">
+            
+            <ion-thumbnail slot="start">
+              <div class="video-thumbnail">
+                <ion-icon name="videocam" size="large"></ion-icon>
+              </div>
+            </ion-thumbnail>
+            
+            <ion-label>
+              <h2>{{ video.name }}</h2>
+              <p>{{ formatDate(video.date) }}</p>
+              <p *ngIf="video.size">{{ formatFileSize(video.size) }}</p>
+            </ion-label>
+
+            <ion-button 
+              fill="clear" 
+              slot="end" 
+              (click)="$event.stopPropagation(); deleteVideo(video)"
+              color="danger">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Recording Indicator -->
+  <div class="recording-indicator" *ngIf="isRecording">
+    <ion-chip color="danger">
+      <ion-icon name="radio-button-on"></ion-icon>
+      <ion-label>Recording...</ion-label>
+    </ion-chip>
   </div>
 </ion-content>
