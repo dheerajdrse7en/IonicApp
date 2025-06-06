@@ -1,15 +1,36 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
-  appName: 'ionic-video-capture-play',
+  appName: 'ionic-app',
   webDir: 'www',
   server: {
     androidScheme: 'https'
   },
+  android: {
+    allowMixedContent: true,
+    captureInput: true,
+    webContentsDebuggingEnabled: true,
+    loggingBehavior: 'debug',
+    useLegacyBridge: false
+  },
   plugins: {
-    Camera: {
-      permissions: ['camera', 'photos']
+    SplashScreen: {
+      launchShowDuration: 3000,
+      backgroundColor: "#1976d2",
+      androidSplashResourceName: "splash",
+      androidScaleType: "CENTER_CROP",
+      showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true
+    },
+    StatusBar: {
+      style: 'dark',
+      backgroundColor: '#1976d2'
+    },
+    Keyboard: {
+      resize: 'body',
+      resizeOnFullScreen: true
     }
   }
 };
