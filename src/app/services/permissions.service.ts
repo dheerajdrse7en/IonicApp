@@ -13,7 +13,6 @@ export class PermissionService {
     private alertController: AlertController
   ) { }
 
-  // Fixed method that returns Promise<boolean>
   async testCamera(): Promise<boolean> {
     try {
       console.log('🔧 Testing camera functionality...');
@@ -24,7 +23,6 @@ export class PermissionService {
     }
   }
 
-  // Fixed method that returns Promise<boolean>
   async testMicrophone(): Promise<boolean> {
     try {
       console.log('🔧 Testing microphone functionality...');
@@ -35,19 +33,15 @@ export class PermissionService {
     }
   }
 
-  // Fixed method that returns the permission statuses
   async getAllPermissionStatuses(): Promise<{[key: string]: boolean}> {
     try {
-      // Return current permission statuses if available
       if (Object.keys(this.permissionStatuses).length > 0) {
         return this.permissionStatuses;
       }
       
-      // Otherwise, check current permissions
       const webPermissions = await this.checkAllPermissions();
       const statuses: {[key: string]: boolean} = {};
       
-      // Convert permission states to boolean
       for (const [key, value] of Object.entries(webPermissions)) {
         statuses[key] = value === 'granted';
       }
@@ -65,14 +59,10 @@ export class PermissionService {
         console.log('🔐 Starting permission requests...');
         await this.showPermissionAlert();
         
-        // Request web-based permissions with delay
         await this.requestWithDelay('Camera', () => this.requestCameraPermission());
         await this.requestWithDelay('Microphone', () => this.requestMicrophonePermission());
         await this.requestWithDelay('Location', () => this.requestLocationPermission());
         await this.requestWithDelay('Notifications', () => this.requestNotificationPermission());
-        
-        // Test hardware after permissions
-        setTimeout(() => this.runHardwareTests(), 3000);
         
         console.log('✅ All permission requests completed');
         await this.showPermissionSummary();
@@ -92,7 +82,6 @@ export class PermissionService {
       const status = granted ? '✅ Granted' : '❌ Denied';
       console.log(`${status}: ${name} permission`);
       
-      // Small delay between requests
       await new Promise(resolve => setTimeout(resolve, 500));
     } catch (error) {
       console.error(`Error requesting ${name}:`, error);
@@ -102,18 +91,16 @@ export class PermissionService {
 
   async requestCameraPermission(): Promise<boolean> {
     try {
-      // Request both front and back camera
       const constraints = {
         video: {
           facingMode: { ideal: 'environment' },
-          width: { ideal: 1280, min: 640 },
-          height: { ideal: 720, min: 480 }
+          width: { ideal: 1920, min: 1280 },
+          height: { ideal: 1080, min: 720 }
         }
       };
       
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
-      // Test camera switching
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(device => device.kind === 'videoinput');
       console.log(`📱 Found ${videoDevices.length} camera(s)`);
@@ -158,7 +145,6 @@ export class PermissionService {
 
   async requestLocationPermission(): Promise<boolean> {
     try {
-      // Request high accuracy location
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(
           resolve,
@@ -173,23 +159,6 @@ export class PermissionService {
       
       console.log(`📍 Location: ${position.coords.latitude}, ${position.coords.longitude}`);
       console.log(`🎯 Accuracy: ${position.coords.accuracy}m`);
-      
-      // Test location watching
-      const watchId = navigator.geolocation.watchPosition(
-        (pos) => {
-          console.log('📍 Location update:', pos.coords.latitude, pos.coords.longitude);
-        },
-        (error) => {
-          console.error('Location watch error:', error);
-        },
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 1000 }
-      );
-      
-      // Stop watching after 2 seconds
-      setTimeout(() => {
-        navigator.geolocation.clearWatch(watchId);
-        console.log('📍 Location watching stopped');
-      }, 2000);
       
       return true;
     } catch (error) {
@@ -208,7 +177,6 @@ export class PermissionService {
         }
         
         if (permission === 'granted') {
-          // Test notification
           const notification = new Notification('Permission Granted!', {
             body: 'All permissions have been successfully configured.',
             icon: '/assets/icon/favicon.png',
@@ -227,20 +195,6 @@ export class PermissionService {
     }
   }
 
-  async runHardwareTests(): Promise<void> {
-    console.log('🔧 Running hardware tests...');
-    
-    const tests = {
-      camera: await this.testCameraHardware(),
-      microphone: await this.testMicrophoneHardware(),
-      sensors: await this.testSensors(),
-      connectivity: await this.testConnectivity()
-    };
-    
-    console.log('🔧 Hardware test results:', tests);
-    await this.showHardwareTestResults(tests);
-  }
-
   private async testCameraHardware(): Promise<boolean> {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
@@ -248,11 +202,14 @@ export class PermissionService {
       
       if (cameras.length === 0) return false;
       
-      // Test each camera
       for (const camera of cameras) {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
-            video: { deviceId: camera.deviceId }
+            video: { 
+              deviceId: camera.deviceId,
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            }
           });
           stream.getTracks().forEach(track => track.stop());
           console.log(`✅ Camera test passed: ${camera.label}`);
@@ -275,7 +232,6 @@ export class PermissionService {
       
       if (microphones.length === 0) return false;
       
-      // Test default microphone
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       const analyser = audioContext.createAnalyser();
@@ -287,7 +243,6 @@ export class PermissionService {
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
       
-      // Test for 1 second
       let hasAudio = false;
       const testDuration = 1000;
       const startTime = Date.now();
@@ -311,58 +266,6 @@ export class PermissionService {
       return true;
     } catch (error) {
       console.error('Microphone hardware test failed:', error);
-      return false;
-    }
-  }
-
-  private async testSensors(): Promise<boolean> {
-    try {
-      let hasAccelerometer = false;
-      let hasGyroscope = false;
-      
-      // Test accelerometer
-      if ('DeviceMotionEvent' in window) {
-        const handler = (event: DeviceMotionEvent) => {
-          if (event.acceleration && (event.acceleration.x !== null || event.acceleration.y !== null || event.acceleration.z !== null)) {
-            hasAccelerometer = true;
-          }
-          if (event.rotationRate && (event.rotationRate.alpha !== null || event.rotationRate.beta !== null || event.rotationRate.gamma !== null)) {
-            hasGyroscope = true;
-          }
-        };
-        
-        window.addEventListener('devicemotion', handler);
-        
-        // Test for 2 seconds
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        window.removeEventListener('devicemotion', handler);
-      }
-      
-      console.log(`📱 Accelerometer: ${hasAccelerometer ? 'AVAILABLE' : 'NOT AVAILABLE'}`);
-      console.log(`📱 Gyroscope: ${hasGyroscope ? 'AVAILABLE' : 'NOT AVAILABLE'}`);
-      
-      return hasAccelerometer || hasGyroscope;
-    } catch (error) {
-      console.error('Sensor test failed:', error);
-      return false;
-    }
-  }
-
-  private async testConnectivity(): Promise<boolean> {
-    try {
-      const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
-      
-      if (connection) {
-        console.log(`📶 Connection type: ${connection.effectiveType}`);
-        console.log(`📶 Downlink: ${connection.downlink} Mbps`);
-        console.log(`📶 RTT: ${connection.rtt} ms`);
-        return true;
-      }
-      
-      return navigator.onLine;
-    } catch (error) {
-      console.error('Connectivity test failed:', error);
       return false;
     }
   }
@@ -402,16 +305,6 @@ export class PermissionService {
     );
   }
 
-  private async showHardwareTestResults(results: any): Promise<void> {
-    const passed = Object.values(results).filter(result => result).length;
-    const total = Object.keys(results).length;
-    
-    await this.showToast(
-      `Hardware Tests: ${passed}/${total} passed`,
-      passed === total ? 'success' : 'warning'
-    );
-  }
-
   private async showToast(message: string, color: string = 'primary'): Promise<void> {
     const toast = await this.toastController.create({
       message,
@@ -429,7 +322,6 @@ export class PermissionService {
     await toast.present();
   }
 
-  // Public methods for checking permissions
   async checkAllPermissions(): Promise<{[key: string]: string}> {
     const permissions = ['camera', 'microphone', 'geolocation', 'notifications'];
     const statuses: {[key: string]: string} = {};

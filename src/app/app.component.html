@@ -1,3 +1,94 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>Camera App</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content>
+    <div class="camera-container">
+      <!-- Video Display -->
+      <div class="video-wrapper">
+        <video 
+          #videoElement
+          autoplay 
+          playsinline 
+          muted
+          class="camera-video"
+          [class.recording]="isRecording">
+        </video>
+        
+        <!-- Recording Indicator -->
+        <div class="recording-indicator" *ngIf="isRecording">
+          <ion-icon name="radio-button-on" color="danger"></ion-icon>
+          <span>{{ formatTime(recordingTime) }}</span>
+        </div>
+        
+        <!-- Camera Status -->
+        <div class="camera-status" *ngIf="!isCameraActive">
+          <ion-icon name="camera-outline" size="large"></ion-icon>
+          <p>Camera not active</p>
+        </div>
+      </div>
+      
+      <!-- Hidden Canvas for Screenshots -->
+      <canvas #canvas style="display: none;"></canvas>
+      
+      <!-- Control Buttons -->
+      <div class="controls">
+        <ion-grid>
+          <ion-row>
+            <!-- Camera Controls -->
+            <ion-col size="12" *ngIf="!isCameraActive">
+              <ion-button 
+                expand="block" 
+                (click)="startCamera()"
+                color="primary">
+                <ion-icon name="camera" slot="start"></ion-icon>
+                Start Camera
+              </ion-button>
+            </ion-col>
+            
+            <!-- Active Camera Controls -->
+            <ion-col size="4" *ngIf="isCameraActive">
+              <ion-button 
+                fill="outline" 
+                (click)="switchCamera()"
+                [disabled]="isRecording">
+                <ion-icon name="camera-reverse-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+            
+            <ion-col size="4" *ngIf="isCameraActive">
+              <ion-button 
+                fill="outline" 
+                (click)="takePicture()">
+                <ion-icon name="camera-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+            
+            <ion-col size="4" *ngIf="isCameraActive">
+              <ion-button 
+                [color]="isRecording ? 'danger' : 'success'"
+                (click)="isRecording ? stopRecording() : startRecording()">
+                <ion-icon [name]="isRecording ? 'stop' : 'play'"></ion-icon>
+              </ion-button>
+            </ion-col>
+            
+            <!-- Stop Camera -->
+            <ion-col size="12" *ngIf="isCameraActive">
+              <ion-button 
+                expand="block" 
+                fill="outline" 
+                color="medium"
+                (click)="stopCamera()">
+                <ion-icon name="power" slot="start"></ion-icon>
+                Stop Camera
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </div>
+    </div>
+  </ion-content>
 </ion-app>

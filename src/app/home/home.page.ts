@@ -96,7 +96,7 @@ export class HomePage implements OnInit, OnDestroy {
           facingMode: 'user' // or 'environment' for back camera
         }, 
         audio: true 
-      });
+      });  
 
       // Show camera preview - wait for the view to update first
       setTimeout(() => {
